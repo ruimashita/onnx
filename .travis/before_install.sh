@@ -8,6 +8,9 @@ if [ ! -n "$NUMCORES" ]; then
 fi
 echo Using $NUMCORES cores
 
+echo ARST
+python --version
+
 # Install dependencies
 if [ "$TRAVIS_OS_NAME" == "linux" ]; then
   sudo apt-get update
@@ -21,15 +24,11 @@ if [ "$TRAVIS_OS_NAME" == "linux" ]; then
   ccache -z
   cd "$pb_dir" && ./configure && make -j${NUMCORES} && make check && sudo make install && sudo ldconfig
   ccache -s
-
-  # Setup Python.
-  export PYTHON_DIR="/usr/bin"
 elif [ "$TRAVIS_OS_NAME" == "osx" ]; then
   brew install ccache protobuf
-
-  # Setup Python.
-  export PYTHON_DIR="/usr/local/bin"
-  brew install ${PYTHON_VERSION}
+  if [ "${PYTHON_VERSION}" == "python3" ]; then
+    brew upgrade python
+  fi
 else
   echo Unknown OS: $TRAVIS_OS_NAME
   exit 1
@@ -37,8 +36,10 @@ fi
 
 # TODO consider using "python3.6 -m venv"
 # which is recommended by python3.6 and may make some difference
+echo NEIO
+python --version
 pip install virtualenv
-virtualenv -p "${PYTHON_DIR}/${PYTHON_VERSION}" "${HOME}/virtualenv"
+virtualenv -p "${PYTHON_VERSION}" "${HOME}/virtualenv"
 source "${HOME}/virtualenv/bin/activate"
 python --version
 
